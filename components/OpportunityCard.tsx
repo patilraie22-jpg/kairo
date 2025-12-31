@@ -5,10 +5,12 @@ import { CareerOpportunity } from '../types';
 interface OpportunityCardProps {
   opp: CareerOpportunity;
   isApplied: boolean;
+  isFavorite: boolean;
   onApply: (id: string, url: string) => void;
+  onToggleFavorite: (id: string) => void;
 }
 
-const OpportunityCard: React.FC<OpportunityCardProps> = ({ opp, isApplied, onApply }) => {
+const OpportunityCard: React.FC<OpportunityCardProps> = ({ opp, isApplied, isFavorite, onApply, onToggleFavorite }) => {
   const [expanded, setExpanded] = useState(false);
 
   const getDeadlineInfo = (deadline: string) => {
@@ -46,6 +48,15 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opp, isApplied, onApp
         </div>
 
         <div className="flex items-center gap-3 md:gap-6">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(opp.id);
+            }}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 ${isFavorite ? 'text-rose-500 bg-rose-50' : 'text-slate-300 hover:text-rose-400 hover:bg-rose-50/50'}`}
+          >
+            <i className={`${isFavorite ? 'fas' : 'far'} fa-heart text-sm`}></i>
+          </button>
           <div className="text-right hidden sm:block">
             <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest ${deadlineInfo.class}`}>{deadlineInfo.label}</span>
           </div>
@@ -83,19 +94,31 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opp, isApplied, onApp
                <i className="fas fa-lock text-[10px]"></i>
                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Official Portal Link</span>
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onApply(opp.id, opp.officialUrl);
-              }}
-              className={`w-full sm:w-auto h-12 md:h-12 px-8 md:px-10 rounded-2xl md:rounded-full font-bold transition-all flex items-center justify-center gap-2 ${
-                isApplied 
-                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                : 'bg-[#0095FF] text-white hover:bg-blue-600 shadow-lg shadow-blue-100 active:scale-95'
-              }`}
-            >
-              {isApplied ? <><i className="fas fa-check"></i> Applied</> : <>Apply Now <i className="fas fa-external-link-alt text-[10px] ml-1"></i></>}
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(opp.id);
+                }}
+                className={`flex-1 sm:flex-none h-12 px-6 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 border ${isFavorite ? 'bg-rose-50 border-rose-100 text-rose-500' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-rose-50 hover:border-rose-100 hover:text-rose-500'}`}
+              >
+                <i className={`${isFavorite ? 'fas' : 'far'} fa-heart text-[10px]`}></i>
+                {isFavorite ? 'Saved' : 'Save'}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onApply(opp.id, opp.officialUrl);
+                }}
+                className={`flex-1 sm:flex-none h-12 px-8 md:px-10 rounded-2xl md:rounded-full font-bold transition-all flex items-center justify-center gap-2 ${
+                  isApplied 
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                  : 'bg-[#0095FF] text-white hover:bg-blue-600 shadow-lg shadow-blue-100 active:scale-95'
+                }`}
+              >
+                {isApplied ? <><i className="fas fa-check"></i> Applied</> : <>Apply Now <i className="fas fa-external-link-alt text-[10px] ml-1"></i></>}
+              </button>
+            </div>
           </div>
         </div>
       )}

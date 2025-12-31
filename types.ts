@@ -46,4 +46,5 @@ export interface AppState {
   isLoading: boolean;
   isRoadmapLoading: boolean;
   applications: string[]; // List of opportunity IDs
+  favorites: string[]; // List of opportunity IDs
 }

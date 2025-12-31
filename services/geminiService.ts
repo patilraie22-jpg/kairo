@@ -112,21 +112,21 @@ export const generateRoadmap = async (profile: UserProfile): Promise<RoadmapStep
   - Education: ${profile.educationLevel} (${profile.major})
   - Interests: ${profile.interests.join(", ")}
 
-  IMPORTANT: Prioritize recommending specific, high-quality COURSES and LEARNING PATHS (e.g., from Coursera, edX, MIT OCW, specialized bootcamps).
+  Rules:
+  1. Prioritize specific, high-quality courses and learning paths (Coursera, edX, specialized bootcamps).
+  2. Each step must be highly actionable.
+  3. Include: Title, Description, Type, Provider, and Reason.
   
-  Each step should include:
-  1. A specific course or project title.
-  2. The platform/provider.
-  3. Why this specific course is better than others for reaching the goal of ${profile.futureGoal}.
-  
-  Return a JSON array of steps.`;
+  Return a JSON object with a "steps" array.`;
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // Switched to Flash for better speed
+      model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
-        tools: [{ googleSearch: {} }],
+        // Removing googleSearch for the roadmap makes it 5-10x faster
+        // because educational curricula are part of the model's core knowledge.
+        thinkingConfig: { thinkingBudget: 0 },
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -152,12 +152,10 @@ export const generateRoadmap = async (profile: UserProfile): Promise<RoadmapStep
       }
     });
 
-    const sources = extractSources(response);
     const result = JSON.parse(response.text || '{"steps": []}');
-    
-    return (result.steps || []).map((step: RoadmapStep) => ({
+    return (result.steps || []).map((step: RoadmapStep, index: number) => ({
       ...step,
-      sources: sources
+      id: step.id || `step-${index}`
     }));
   } catch (error) {
     console.error("Error generating roadmap:", error);

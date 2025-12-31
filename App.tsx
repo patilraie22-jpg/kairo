@@ -13,7 +13,8 @@ const App: React.FC = () => {
     roadmap: [],
     isLoading: false,
     isRoadmapLoading: false,
-    applications: []
+    applications: [],
+    favorites: []
   });
 
   const [notification, setNotification] = useState<string | null>(null);
@@ -73,6 +74,18 @@ const App: React.FC = () => {
     }, 1500);
   };
 
+  const handleToggleFavorite = (id: string) => {
+    setState(prev => {
+      const isFavorite = prev.favorites.includes(id);
+      return {
+        ...prev,
+        favorites: isFavorite 
+          ? prev.favorites.filter(favId => favId !== id) 
+          : [...prev.favorites, id]
+      };
+    });
+  };
+
   const handleRefresh = () => {
     if (state.user) {
       fetchAttempted.current = false;
@@ -82,7 +95,7 @@ const App: React.FC = () => {
 
   const logout = () => {
     fetchAttempted.current = false;
-    setState({ user: null, opportunities: [], roadmap: [], isLoading: false, isRoadmapLoading: false, applications: [] });
+    setState({ user: null, opportunities: [], roadmap: [], isLoading: false, isRoadmapLoading: false, applications: [], favorites: [] });
   };
 
   return (
@@ -96,6 +109,7 @@ const App: React.FC = () => {
             onApply={handleApply} 
             onRefresh={handleRefresh}
             onLogout={logout}
+            onToggleFavorite={handleToggleFavorite}
           />
         </div>
       )}

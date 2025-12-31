@@ -10,13 +10,15 @@ interface DashboardProps {
   onApply: (id: string, url: string) => void;
   onRefresh: () => void;
   onLogout: () => void;
+  onToggleFavorite: (id: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'recommended' | 'expiring' | 'applied' | 'roadmap'>('recommended');
+const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogout, onToggleFavorite }) => {
+  const [activeTab, setActiveTab] = useState<'recommended' | 'expiring' | 'applied' | 'roadmap' | 'favorites'>('recommended');
 
   const filteredOpps = state.opportunities.filter(opp => {
     if (activeTab === 'applied') return state.applications.includes(opp.id);
+    if (activeTab === 'favorites') return state.favorites.includes(opp.id);
     if (activeTab === 'expiring') {
         const diff = new Date(opp.deadline).getTime() - new Date().getTime();
         return diff > 0 && diff < (1000 * 3600 * 24 * 7);
@@ -82,6 +84,16 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogo
                       </span>
                     )}
                   </button>
+                  <button 
+                    onClick={() => setActiveTab('favorites')}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-bold transition-soft ${activeTab === 'favorites' ? 'bg-white shadow-sm ring-1 ring-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <i className="fas fa-heart"></i>
+                      <span>Saved</span>
+                    </div>
+                    <span className="text-[10px] font-bold opacity-40">{state.favorites.length}</span>
+                  </button>
               </div>
             </div>
 
@@ -144,10 +156,16 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogo
             <header className="mb-6 lg:mb-10 flex items-end justify-between gap-4">
               <div>
                 <h1 className="text-2xl lg:text-4xl font-extrabold text-slate-900 hero-text mb-1 lg:mb-2">
-                    {activeTab === 'roadmap' ? 'Learning Roadmap' : activeTab === 'recommended' ? 'Your Roadmap' : activeTab === 'expiring' ? 'Upcoming' : 'Applied'}
+                    {activeTab === 'roadmap' ? 'Learning Roadmap' : 
+                     activeTab === 'recommended' ? 'Your Roadmap' : 
+                     activeTab === 'expiring' ? 'Upcoming' : 
+                     activeTab === 'favorites' ? 'Saved' : 'Applied'}
                 </h1>
                 <p className="text-slate-400 font-medium text-xs lg:text-base leading-relaxed">
-                  {activeTab === 'roadmap' ? 'Bridge the gap to your goal with these steps.' : activeTab === 'expiring' ? 'Opportunities closing soon. Don\'t miss out.' : 'Verified path curated specifically for you.'}
+                  {activeTab === 'roadmap' ? 'Bridge the gap to your goal with these steps.' : 
+                   activeTab === 'expiring' ? 'Opportunities closing soon. Don\'t miss out.' : 
+                   activeTab === 'favorites' ? 'Your hand-picked collection of opportunities.' : 
+                   'Verified path curated specifically for you.'}
                 </p>
               </div>
             </header>
@@ -176,18 +194,22 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogo
                           key={opp.id} 
                           opp={opp} 
                           isApplied={state.applications.includes(opp.id)}
+                          isFavorite={state.favorites.includes(opp.id)}
                           onApply={onApply}
+                          onToggleFavorite={onToggleFavorite}
                         />
                       ))}
                     </div>
                   ) : (
                     <div className="py-16 md:py-24 text-center bg-white border border-slate-100 rounded-[32px] md:rounded-[48px] shadow-sm">
                       <div className="w-12 h-12 md:w-16 md:h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-                        <i className="fas fa-wind text-lg md:text-xl text-slate-200"></i>
+                        <i className={`fas ${activeTab === 'favorites' ? 'fa-heart-broken' : 'fa-wind'} text-lg md:text-xl text-slate-200`}></i>
                       </div>
-                      <h3 className="text-lg md:text-xl font-bold text-slate-800">Clear Skies</h3>
+                      <h3 className="text-lg md:text-xl font-bold text-slate-800">
+                        {activeTab === 'favorites' ? 'No Saved Items' : 'Clear Skies'}
+                      </h3>
                       <p className="text-slate-400 mt-2 md:mt-3 max-w-sm mx-auto text-xs md:text-sm font-medium px-6">
-                        No matches currently in this view. Try refreshing to trigger a fresh scan.
+                        {activeTab === 'favorites' ? 'Explore discovery to add some favorites!' : 'No matches currently in this view. Try refreshing to trigger a fresh scan.'}
                       </p>
                     </div>
                   )}
@@ -199,7 +221,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogo
       </div>
 
       {/* Fixed Bottom Navigation - Mobile Only */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-100 px-6 py-3 pb-6 flex items-center justify-between z-50 shadow-[0_-8px_24px_rgba(0,0,0,0.04)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-100 px-4 py-3 pb-6 flex items-center justify-between z-50 shadow-[0_-8px_24px_rgba(0,0,0,0.04)]">
         <button 
           onClick={() => setActiveTab('recommended')}
           className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'recommended' ? 'text-indigo-600 scale-110' : 'text-slate-400'}`}
@@ -223,6 +245,16 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onApply, onRefresh, onLogo
               {expiringCount}
             </div>
           )}
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('favorites')}
+          className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'favorites' ? 'text-indigo-600 scale-110' : 'text-slate-400'}`}
+        >
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${activeTab === 'favorites' ? 'bg-indigo-50' : ''}`}>
+            <i className="fas fa-heart text-lg"></i>
+          </div>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Saved</span>
         </button>
 
         <button 
