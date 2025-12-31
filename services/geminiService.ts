@@ -2,8 +2,6 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { UserProfile, CareerOpportunity, RoadmapStep, GroundingSource } from "../types";
 
-const API_KEY = process.env.API_KEY || "";
-
 /**
  * Utility to extract search grounding sources from Gemini response
  */
@@ -18,9 +16,7 @@ const extractSources = (response: any): GroundingSource[] => {
 };
 
 export const fetchOpportunities = async (profile: UserProfile): Promise<CareerOpportunity[]> => {
-  if (!API_KEY) return [];
-
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const isHS = profile.educationLevel === 'High School';
   const majorContext = isHS ? `Favorite Subjects/Area: ${profile.major}` : `Major/Field: ${profile.major}`;
@@ -103,9 +99,7 @@ export const fetchOpportunities = async (profile: UserProfile): Promise<CareerOp
 };
 
 export const generateRoadmap = async (profile: UserProfile): Promise<RoadmapStep[]> => {
-  if (!API_KEY) return [];
-
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   const prompt = `Generate a high-end 5-step career learning roadmap for a user wanting to become a ${profile.futureGoal}.
   Profile:
@@ -124,8 +118,6 @@ export const generateRoadmap = async (profile: UserProfile): Promise<RoadmapStep
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
-        // Removing googleSearch for the roadmap makes it 5-10x faster
-        // because educational curricula are part of the model's core knowledge.
         thinkingConfig: { thinkingBudget: 0 },
         responseMimeType: "application/json",
         responseSchema: {
@@ -164,9 +156,7 @@ export const generateRoadmap = async (profile: UserProfile): Promise<RoadmapStep
 };
 
 export const generateSpeech = async (text: string): Promise<string | undefined> => {
-  if (!API_KEY) return;
-  
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
