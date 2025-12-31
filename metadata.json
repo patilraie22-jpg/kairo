@@ -1,0 +1,7 @@
+{
+  "name": "Copy of KAIRO - AI-Powered Career Discovery",
+  "description": "A high-end career discovery platform that uses AI search grounding to find verified, up-to-date career opportunities from official sources tailored to your profile.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
